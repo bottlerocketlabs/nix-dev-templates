@@ -1,0 +1,36 @@
+{
+  description = "A Nix-flake-based Python development environment";
+
+  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.*.tar.gz";
+
+  outputs = { self, nixpkgs }:
+    let
+      supportedSystems =
+        [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      forEachSupportedSystem = f:
+        nixpkgs.lib.genAttrs supportedSystems
+          (system: f { pkgs = import nixpkgs { inherit system; }; });
+    in
+    {
+      devShells = forEachSupportedSystem ({ pkgs }: {
+        default = pkgs.mkShell {
+          venvDir = "./.venv";
+          packages = with pkgs;
+            [ taglib openssl git libxml2 libxslt libzip zlib ]
+            ++ (with pkgs.python311Packages; [
+              python
+              pip
+              venvShellHook
+              virtualenv
+            ]);
+          postVenvCreation = ''
+            unset SOURCE_DATE_EPOCH
+          '';
+          postShellHook = ''
+            unset SOURCE_DATE_EPOCH
+            find . -name '*requirements*.txt' -exec pip install -r {} \;
+          '';
+        };
+      });
+    };
+}
