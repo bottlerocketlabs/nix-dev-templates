@@ -15,10 +15,8 @@
         rust-overlay.overlays.default
         (final: prev: {
           rustToolchain =
-            let
-              rust = prev.rust-bin;
-            in
-            if builtins.pathExists ./rust-toolchain.toml then
+            let rust = prev.rust-bin;
+            in if builtins.pathExists ./rust-toolchain.toml then
               rust.fromRustupToolchainFile ./rust-toolchain.toml
             else if builtins.pathExists ./rust-toolchain then
               rust.fromRustupToolchainFile ./rust-toolchain
@@ -28,10 +26,11 @@
               };
         })
       ];
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
-      forEachSupportedSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f {
-        pkgs = import nixpkgs { inherit overlays system; };
-      });
+      supportedSystems =
+        [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      forEachSupportedSystem = f:
+        nixpkgs.lib.genAttrs supportedSystems
+          (system: f { pkgs = import nixpkgs { inherit overlays system; }; });
     in
     {
       devShells = forEachSupportedSystem ({ pkgs }: {
