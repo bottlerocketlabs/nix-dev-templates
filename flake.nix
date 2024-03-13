@@ -207,6 +207,11 @@
           description = "Shell script development environment";
         };
 
+        snapcraft = {
+          path = ./snapcraft;
+          description = "Snapcraft development environment";
+        };
+
         zig = {
           path = ./zig;
           description = "Zig development environment";
